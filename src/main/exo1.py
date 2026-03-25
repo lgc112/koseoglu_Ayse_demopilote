@@ -155,7 +155,7 @@ def single_race(env, agents, names, scores):
     dist_avg = np.array(distances).mean(axis=0)
     dist_std = np.array(distances).std(axis=0)
     #on remplace les index i par 0  
-    scores.append(names[0], pos_avg[0], pos_std[5], dist_avg[0], dist_std[0])
+    scores.append(names[0], pos_avg[0], pos_std[0], dist_avg[0], dist_std[0])
     agents[0].isEnd = False
     print("race duration:", steps)
 
