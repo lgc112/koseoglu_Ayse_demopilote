@@ -15,17 +15,12 @@ from dataclasses import dataclass
 # Append the "src" folder to sys.path.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", "src")))
 
-from agents.team1.agent1 import Agent1
-from agents.team2.agent2 import Agent2
-from agents.team3.agent3 import Agent3
-from agents.team4.agent4 import Agent4
-from agents.team5.agent5 import Agent5
+#on enleve tous les import pour ne voir apparaitre l agent 6 
 from agents.team6.agent6 import Agent6
-from agents.team7.agent7 import Agent7
 from pystk2_gymnasium.envs import STKRaceMultiEnv, AgentSpec
 from pystk2_gymnasium.definitions import CameraMode
 
-MAX_TEAMS = 7
+MAX_TEAMS = 7 # on peut laisser le nombre de team tel quel ca n'impacte plus 
 MAX_STEPS = 1000
 NB_RACES = 1
 
@@ -86,7 +81,7 @@ AgentSpec.__hash__ = agent_spec_hash
 
 # Create agents specifications.
 agents_specs = [
-    AgentSpec(name=f"Team{i+1}", rank_start=i, use_ai=False, camera_mode=CameraMode.ON) for i in range(MAX_TEAMS)
+    AgentSpec(name=f"team{6}", rank_start=1, use_ai=False, camera_mode=CameraMode.ON) 
 ]
 
 def create_race():
@@ -101,19 +96,19 @@ def create_race():
     agents = []
     names = []
 
-    agents.append(Agent1(env, path_lookahead=3))
-    agents.append(Agent2(env, path_lookahead=3))
-    agents.append(Agent3(env, path_lookahead=3))
-    agents.append(Agent4(env, path_lookahead=3))
-    agents.append(Agent5(env, path_lookahead=3))
+    #mise en commentaire des autres agents 
+    #agents.append(Agent1(env, path_lookahead=3))
+    #agents.append(Agent2(env, path_lookahead=3))
+    #agents.append(Agent3(env, path_lookahead=3))
+    #agents.append(Agent4(env, path_lookahead=3))
+    #agents.append(Agent5(env, path_lookahead=3))
     agents.append(Agent6(env, path_lookahead=3))
-    agents.append(Agent7(env, path_lookahead=3))
+    #agents.append(Agent7(env, path_lookahead=3))
     np.random.shuffle(agents)
 
-    for i in range(MAX_TEAMS):
-        names.append(agents[i].name)
-        agents_specs[i].name = agents[i].name
-        agents_specs[i].kart = agents[i].name
+    names.append(agents[0].name)
+    agents_specs[0].name = agents[0].name
+    agents_specs[0].kart = agents[0].name
     return env, agents, names
 
 
@@ -127,30 +122,30 @@ def single_race(env, agents, names, scores):
     while not done and steps < MAX_STEPS:
         actions = {}
         env.world_update()
-        for i in range(MAX_TEAMS):
-            str = f"{i}"
-            try:
-                actions[str] = agents[i].choose_action(obs[str])
-            except Exception as e:
-                print(f"Team {i+1} error: {e}")
+        
+        str = f"{0}"
+        try:
+            actions[str] = agents[0].choose_action(obs[str])
+        except Exception as e:
+                print(f"Team {6} error: {e}")
                 actions[str] = default_action
 
             # check if agents have finished the race
-            kart = env.world.karts[i]
-            if kart.has_finished_race and not agents[i].isEnd:
-                print(f"{names[i]} has finished race !")
-                nb_finished += 1
-                agents[i].isEnd = True
+        kart = env.world.karts[0]
+        if kart.has_finished_race and not agents[0].isEnd:
+            print(f"{names[0]} has finished race !")
+            nb_finished += 1
+            agents[0].isEnd = True
 
         obs, _, _, _, info = env.step(actions)
 
         # prepare data to display leaderboard
-        pos = np.zeros(MAX_TEAMS)
-        dist = np.zeros(MAX_TEAMS)
-        for i in range(MAX_TEAMS):
-            str = f"{i}"
-            pos[i] = info['infos'][str]['position']
-            dist[i] = info['infos'][str]['distance']
+        pos = np.zeros(1)
+        dist = np.zeros(1)
+        str = f"{0}"
+        #on prend seulement la position 0 ou se trouve la team 6
+        pos[0] = info['infos'][str]['position']
+        dist[0] = info['infos'][str]['distance']
         steps = steps + 1
         done = (nb_finished == 5)
         positions.append(pos)
@@ -159,17 +154,16 @@ def single_race(env, agents, names, scores):
     pos_std = np.array(positions).std(axis=0)
     dist_avg = np.array(distances).mean(axis=0)
     dist_std = np.array(distances).std(axis=0)
-    for i in range(MAX_TEAMS):
-        scores.append(names[i], pos_avg[i], pos_std[i], dist_avg[i], dist_std[i])
-        agents[i].isEnd = False
+    #on remplace les index i par 0  
+    scores.append(names[0], pos_avg[0], pos_std[5], dist_avg[0], dist_std[0])
+    agents[0].isEnd = False
     print("race duration:", steps)
 
 def main_loop():
     scores = Scores()
     #unsatisfactory: first call just to init the names
     env, agents, names = create_race()
-    for i in range(MAX_TEAMS):
-        scores.init(names[i])
+    scores.init(names[0])
 
     for j in range(NB_RACES):
         print(f"race : {j}")
